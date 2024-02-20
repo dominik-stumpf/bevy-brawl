@@ -9,13 +9,17 @@ impl Plugin for CameraPlugin {
 }
 
 #[derive(Component)]
-pub struct MainCamera;
+pub struct MainCamera {
+    pub initial_position: Vec3,
+}
 
 fn spawn_camera(mut commands: Commands) {
+    let initial_position = Vec3::new(15.0, 5.0, 15.0);
     let camera = Camera3dBundle {
-        transform: Transform::from_xyz(15.0, 5.0, 15.0).looking_at(Vec3::ZERO, Vec3::Y),
+        transform: Transform::from_xyz(initial_position.x, initial_position.y, initial_position.z)
+            .looking_at(Vec3::ZERO, Vec3::Y),
         ..default()
     };
 
-    commands.spawn((camera, MainCamera));
+    commands.spawn((camera, MainCamera { initial_position }));
 }

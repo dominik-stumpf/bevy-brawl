@@ -14,7 +14,8 @@ impl Plugin for PlayerPlugin {
                     draw_position_marker_gizmo,
                     update_player_position,
                 ),
-            );
+            )
+            .add_systems(PostUpdate, lock_camera_to_entity::<Player>);
     }
 }
 
@@ -110,22 +111,21 @@ fn update_marker_position(
     }
 }
 
-// const MAIN_CAMERA_TRANSFORM_OFFSET: Vec3 = Vec3::new(0., 70., -70.);
-// fn lock_camera_to_entity<T: Component>(
-//     mut param_query: ParamSet<(
-//         Query<&Transform, With<T>>,
-//         Query<&mut Transform, With<MainCamera>>,
-//     )>,
-// ) {
-//     let mut target_translation = Vec3::ZERO;
-//     for target in param_query.p0().iter_mut() {
-//         target_translation = target.translation;
-//     }
-//
-//     for mut camera in param_query.p1().iter_mut() {
-//         camera.translation =
-//             Transform::from_translation(target_translation + MAIN_CAMERA_TRANSFORM_OFFSET)
-//                 .looking_at(target_translation, Vec3::Z)
-//                 .translation;
-//     }
-// }
+fn lock_camera_to_entity<T: Component>(
+    mut param_query: ParamSet<(
+        Query<&Transform, With<T>>,
+        Query<(&mut Transform, &MainCamera)>,
+    )>,
+) {
+    let mut target_translation = Vec3::ZERO;
+    for target in param_query.p0().iter_mut() {
+        target_translation = target.translation;
+    }
+
+    for (mut camera_transform, camera) in param_query.p1().iter_mut() {
+        camera_transform.translation =
+            Transform::from_translation(target_translation + camera.initial_position)
+                .looking_at(target_translation, Vec3::Z)
+                .translation;
+    }
+}
