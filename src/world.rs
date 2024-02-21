@@ -29,7 +29,7 @@ fn spawn_ground(
         depth_map: Some(asset_server.load("textures/coast_sand_rocks_02_disp_1k.jpg")),
         perceptual_roughness: 0.8,
         reflectance: 0.5,
-        parallax_depth_scale: 0.04,
+        parallax_depth_scale: -0.04,
         parallax_mapping_method: ParallaxMappingMethod::Relief { max_steps: 8 },
         ..default()
     };
@@ -62,7 +62,7 @@ fn spawn_light(mut commands: Commands) {
         transform: Transform::from_translation(Vec3::ONE).looking_at(Vec3::ZERO, Vec3::Y),
         directional_light: DirectionalLight {
             shadows_enabled: true,
-            illuminance: 1200.,
+            illuminance: 500.0,
             ..default()
         },
         ..default()
