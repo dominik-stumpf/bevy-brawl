@@ -2,6 +2,8 @@ use bevy::{math::vec3, prelude::*};
 
 use crate::{camera::MainCamera, CursorPosition};
 
+const MOVEMENT_SPEED: f32 = 8.0;
+
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
@@ -67,7 +69,7 @@ fn update_player_position(
         let target_rotation = (direction.x).atan2(direction.y);
         player_transform.rotation = Quat::from_euler(EulerRot::XYZ, 0., target_rotation, 0.);
 
-        let step_magnitude = 5.0 * time.delta_seconds();
+        let step_magnitude = MOVEMENT_SPEED * time.delta_seconds();
         if step_magnitude.powi(2) > distance {
             player_transform.translation = Transform::from_xyz(
                 marker.translation.x,

@@ -20,10 +20,27 @@ fn spawn_ground(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    asset_server: Res<AssetServer>,
 ) {
+    let ground_material = StandardMaterial {
+        normal_map_texture: Some(asset_server.load("textures/coast_sand_rocks_02_nor_gl_1k.jpg")),
+        base_color_texture: Some(asset_server.load("textures/coast_sand_rocks_02_diff_1k.jpg")),
+        occlusion_texture: Some(asset_server.load("textures/coast_sand_rocks_02_ao_1k.jpg")),
+        depth_map: Some(asset_server.load("textures/coast_sand_rocks_02_disp_1k.jpg")),
+        perceptual_roughness: 0.8,
+        reflectance: 0.5,
+        parallax_depth_scale: 0.04,
+        parallax_mapping_method: ParallaxMappingMethod::Relief { max_steps: 8 },
+        ..default()
+    };
+
+    let ground_mesh = Mesh::from(Circle::new(16.0))
+        .with_generated_tangents()
+        .expect("generate tangets for normal map");
+
     let ground = PbrBundle {
-        mesh: meshes.add(Circle::new(16.0)),
-        material: materials.add(Color::YELLOW_GREEN),
+        mesh: meshes.add(ground_mesh),
+        material: materials.add(ground_material),
         transform: Transform::from_rotation(Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2)),
         ..default()
     };
@@ -45,7 +62,7 @@ fn spawn_light(mut commands: Commands) {
         transform: Transform::from_translation(Vec3::ONE).looking_at(Vec3::ZERO, Vec3::Y),
         directional_light: DirectionalLight {
             shadows_enabled: true,
-            illuminance: 500.,
+            illuminance: 1200.,
             ..default()
         },
         ..default()
