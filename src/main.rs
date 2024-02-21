@@ -44,7 +44,8 @@ fn update_cursor_position(
         return;
     };
 
-    let Some(distance) = ray.intersect_plane(plane.translation, Plane3d { normal: plane.up() }) else {
+    let Some(distance) = ray.intersect_plane(plane.translation, Plane3d { normal: plane.up() })
+    else {
         return;
     };
     let point = ray.get_point(distance);
