@@ -1,5 +1,4 @@
-// this file modified version of: https://github.com/bevyengine/bevy/blob/8531033b31b086f202b881933d1efcabf8fea026/examples/3d/skybox.rs
-
+// this file is a modified version of: https://github.com/bevyengine/bevy/blob/8531033b31b086f202b881933d1efcabf8fea026/examples/3d/skybox.rs
 //! Load a cubemap texture onto a cube like a skybox and cycle through different compressed texture formats
 
 use bevy::{
