@@ -1,19 +1,22 @@
-use bevy::{core_pipeline::Skybox, prelude::*};
-
 use self::skybox::{Cubemap, CUBEMAPS};
+use bevy::{core_pipeline::Skybox, prelude::*};
+use bevy_panorbit_camera::{PanOrbitCamera, PanOrbitCameraPlugin};
 
 mod skybox;
 pub struct CameraPlugin;
 
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_camera).add_systems(
-            Update,
-            (
-                skybox::cycle_cubemap_asset,
-                skybox::asset_loaded.after(skybox::cycle_cubemap_asset),
-            ),
-        );
+        app.add_plugins(PanOrbitCameraPlugin)
+            // .add_systems(Startup, spawn_panorbit_camera)
+            .add_systems(Startup, spawn_camera)
+            .add_systems(
+                Update,
+                (
+                    skybox::cycle_cubemap_asset,
+                    skybox::asset_loaded.after(skybox::cycle_cubemap_asset),
+                ),
+            );
     }
 }
 
@@ -47,13 +50,39 @@ fn spawn_camera(mut commands: Commands, asset_server: Res<AssetServer>) {
         },
     ));
 
-    // ambient light
-    // NOTE: The ambient light is used to scale how bright the environment map is so with a bright
-    // environment map, use an appropriate color and brightness to match
     commands.insert_resource(AmbientLight {
         color: Color::rgb_u8(210, 220, 240),
         brightness: 0.2,
     });
+
+    commands.insert_resource(Cubemap {
+        is_loaded: false,
+        index: 0,
+        image_handle: skybox_handle,
+    });
+}
+
+fn spawn_panorbit_camera(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let skybox_handle = asset_server.load(CUBEMAPS[0].0);
+
+    commands.spawn((
+        Camera3dBundle {
+            transform: Transform::from_translation(Vec3::new(0.0, 1.5, 5.0)),
+            ..default()
+        },
+        PanOrbitCamera::default(),
+        Skybox {
+            image: skybox_handle.clone(),
+            brightness: 150.0,
+        },
+        EnvironmentMapLight {
+            diffuse_map: asset_server
+                .load("environment_maps/kloofendal_43d_clear_puresky_diff_1k.ktx2"),
+            specular_map: asset_server
+                .load("environment_maps/kloofendal_43d_clear_puresky_spec_1k.ktx2"),
+            intensity: 1200.0,
+        },
+    ));
 
     commands.insert_resource(Cubemap {
         is_loaded: false,

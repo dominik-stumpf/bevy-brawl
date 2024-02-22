@@ -1,4 +1,7 @@
-use bevy::prelude::*;
+use bevy::{
+    prelude::*,
+    utils::{info, warn},
+};
 use camera::{CameraPlugin, MainCamera};
 use debug::DebugPlugin;
 use player::PlayerPlugin;
@@ -33,7 +36,12 @@ fn update_cursor_position(
     mut cursor_position_resource: ResMut<CursorPosition>,
     mut gizmos: Gizmos,
 ) {
-    let (camera, camera_transform) = camera_query.single();
+    let Ok(camera_result) = camera_query.get_single() else {
+        warn_once!("MainCamera was not found");
+        return;
+    };
+
+    let (camera, camera_transform) = camera_result;
     let plane = Transform::from_xyz(0., 0., 0.);
 
     let Some(cursor_position) = windows.single().cursor_position() else {
