@@ -28,7 +28,7 @@ fn spawn_ground(
         occlusion_texture: Some(asset_server.load("textures/coast_sand_rocks_02_ao_1k.jpg")),
         depth_map: Some(asset_server.load("textures/coast_sand_rocks_02_disp_1k.jpg")),
         perceptual_roughness: 0.8,
-        reflectance: 0.5,
+        reflectance: 0.2,
         parallax_depth_scale: -0.04,
         parallax_mapping_method: ParallaxMappingMethod::Relief { max_steps: 8 },
         ..default()

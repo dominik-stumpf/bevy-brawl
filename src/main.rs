@@ -1,7 +1,4 @@
-use bevy::{
-    prelude::*,
-    utils::{info, warn},
-};
+use bevy::prelude::*;
 use camera::{CameraPlugin, MainCamera};
 use debug::DebugPlugin;
 use player::PlayerPlugin;
@@ -15,7 +12,13 @@ mod world;
 fn main() {
     App::new()
         .add_plugins((
-            DefaultPlugins,
+            DefaultPlugins.set(WindowPlugin {
+                primary_window: Some(Window {
+                    name: Some("game-window".into()),
+                    ..default()
+                }),
+                ..default()
+            }),
             bevy_framepace::FramepacePlugin,
             DebugPlugin,
             WorldPlugin,
@@ -23,6 +26,7 @@ fn main() {
             PlayerPlugin,
         ))
         .insert_resource(CursorPosition::default())
+        .insert_resource(Msaa::default())
         .add_systems(Update, update_cursor_position)
         .run();
 }
