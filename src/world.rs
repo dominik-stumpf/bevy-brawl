@@ -1,10 +1,15 @@
+use crate::GameLayer;
 use bevy::prelude::*;
+use bevy_xpbd_3d::{
+    components::{CollisionLayers, Friction, LayerMask, RigidBody},
+    plugins::collision::{AsyncSceneCollider, Collider, ComputedCollider},
+};
 
 pub struct WorldPlugin;
 
 impl Plugin for WorldPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, (spawn_ground, spawn_light))
+        app.add_systems(Startup, (spawn_world_map, spawn_light))
             .insert_resource(ClearColor(Color::rgb(0.0, 0.0, 0.0)))
             .insert_resource(AmbientLight {
                 color: Color::WHITE,
@@ -15,6 +20,37 @@ impl Plugin for WorldPlugin {
 
 #[derive(Component)]
 pub struct Ground;
+
+fn spawn_world_map(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
+    asset_server: Res<AssetServer>,
+) {
+    commands.spawn((
+        Name::new("Ground"),
+        SceneBundle {
+            scene: asset_server.load("models/test_map.glb#Scene0"),
+            ..default()
+        },
+        AsyncSceneCollider::new(Some(ComputedCollider::ConvexHull)).with_layers_for_name(
+            "Ground",
+            CollisionLayers::new(GameLayer::Ground, LayerMask::ALL),
+        ),
+        RigidBody::Static,
+    ));
+
+    commands.spawn((
+        RigidBody::Dynamic,
+        Collider::cuboid(1.0, 1.0, 1.0),
+        PbrBundle {
+            mesh: meshes.add(Cuboid::default()),
+            material: materials.add(Color::rgb(0.8, 0.7, 0.6)),
+            transform: Transform::from_xyz(3.0, 2.0, 3.0).with_scale(Vec3::splat(3.0)),
+            ..default()
+        },
+    ));
+}
 
 fn spawn_ground(
     mut commands: Commands,
