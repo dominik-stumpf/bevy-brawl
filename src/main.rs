@@ -37,10 +37,15 @@ fn main() {
         .run();
 }
 
+/// Collision layer for entities
 #[derive(PhysicsLayer, Clone, Copy, Debug)]
 pub enum GameLayer {
+    /// Player controlled character
     Player,
-    Enemy,
-    Ground,
+    /// Mobile object: AI controlled character
+    Mob,
+    /// Part of the map that has collider
+    Terrain,
+    /// Flying object propelled by exernal force
     Projectile,
 }

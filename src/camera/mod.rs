@@ -3,6 +3,7 @@ use bevy::{core_pipeline::Skybox, prelude::*};
 use bevy_panorbit_camera::{PanOrbitCamera, PanOrbitCameraPlugin};
 
 mod skybox;
+pub mod utils;
 pub struct CameraPlugin;
 
 impl Plugin for CameraPlugin {

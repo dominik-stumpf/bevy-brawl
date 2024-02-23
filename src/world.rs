@@ -28,14 +28,17 @@ fn spawn_world_map(
     asset_server: Res<AssetServer>,
 ) {
     commands.spawn((
-        Name::new("Ground"),
+        Name::new("WorldMap"),
         SceneBundle {
             scene: asset_server.load("models/test_map.glb#Scene0"),
             ..default()
         },
         AsyncSceneCollider::new(Some(ComputedCollider::ConvexHull)).with_layers_for_name(
-            "Ground",
-            CollisionLayers::new(GameLayer::Ground, LayerMask::ALL),
+            "Terrain",
+            CollisionLayers::new(
+                GameLayer::Terrain,
+                [GameLayer::Player, GameLayer::Projectile],
+            ),
         ),
         RigidBody::Static,
     ));

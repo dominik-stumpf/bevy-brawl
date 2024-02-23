@@ -2,8 +2,8 @@ use bevy::{prelude::*, transform::TransformSystem};
 use bevy_xpbd_3d::{math::*, prelude::*};
 
 use crate::{
-    camera::MainCamera, character_controller::CharacterControllerBundle,
-    cursor_caster::CursorPosition, GameLayer,
+    camera::utils::lock_camera_to_entity, character_controller::CharacterControllerBundle,
+    GameLayer,
 };
 
 const MOVEMENT_SPEED: f32 = 8.0;
@@ -12,22 +12,17 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, (spawn_player, spawn_position_marker))
-            .add_systems(Update, (update_marker_position, draw_position_marker_gizmo))
-            .add_systems(
-                PostUpdate,
-                lock_camera_to_entity::<Player>
-                    .after(PhysicsSet::Sync)
-                    .before(TransformSystem::TransformPropagate),
-            );
+        app.add_systems(Startup, spawn_player).add_systems(
+            PostUpdate,
+            lock_camera_to_entity::<Player>
+                .after(PhysicsSet::Sync)
+                .before(TransformSystem::TransformPropagate),
+        );
     }
 }
 
 #[derive(Component)]
 pub struct Player;
-
-#[derive(Component)]
-struct PositionMarker;
 
 fn spawn_player(
     mut commands: Commands,
@@ -35,6 +30,7 @@ fn spawn_player(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     commands.spawn((
+        Name::new("Player"),
         Player,
         PbrBundle {
             mesh: meshes.add(Capsule3d::new(0.4, 1.0)),
@@ -45,7 +41,7 @@ fn spawn_player(
         CharacterControllerBundle::new(
             Collider::capsule(1.0, 0.4),
             Vector::NEG_Y * 9.81,
-            CollisionLayers::new(GameLayer::Player, LayerMask::ALL),
+            CollisionLayers::new(GameLayer::Player, GameLayer::Terrain),
         )
         .with_movement(30.0, 0.92, 7.0, (30.0 as Scalar).to_radians()),
     ));
@@ -80,51 +76,3 @@ fn spawn_player(
 //         }
 //     }
 // }
-
-fn spawn_position_marker(mut commands: Commands) {
-    commands.spawn((PositionMarker, Transform::default()));
-}
-
-fn draw_position_marker_gizmo(
-    mut gizmos: Gizmos,
-    marker_query: Query<&Transform, With<PositionMarker>>,
-) {
-    let transform = marker_query.single();
-    gizmos.circle(
-        transform.translation,
-        Direction3d::new_unchecked(*transform.up()), // Up vector is already normalized.
-        0.15,
-        Color::RED,
-    );
-}
-
-fn update_marker_position(
-    mut marker_query: Query<&mut Transform, With<PositionMarker>>,
-    cursor_position_query: Res<CursorPosition>,
-    mouse_input: Res<ButtonInput<MouseButton>>,
-) {
-    let mut transform = marker_query.single_mut();
-
-    if mouse_input.pressed(MouseButton::Left) {
-        transform.translation = cursor_position_query.0;
-    }
-}
-
-fn lock_camera_to_entity<T: Component>(
-    mut param_query: ParamSet<(
-        Query<&Transform, With<T>>,
-        Query<(&mut Transform, &MainCamera)>,
-    )>,
-) {
-    let mut target_translation = Vec3::ZERO;
-    for target in param_query.p0().iter_mut() {
-        target_translation = target.translation;
-    }
-
-    for (mut camera_transform, camera) in param_query.p1().iter_mut() {
-        camera_transform.translation =
-            Transform::from_translation(target_translation + camera.initial_position)
-                .looking_at(target_translation, Vec3::Z)
-                .translation;
-    }
-}
