@@ -1,3 +1,4 @@
+use ability::AbilityPlugin;
 use bevy::prelude::*;
 use bevy_xpbd_3d::{plugins::PhysicsPlugins, prelude::PhysicsLayer};
 use camera::CameraPlugin;
@@ -6,6 +7,7 @@ use debug::DebugPlugin;
 use player::PlayerPlugin;
 use world::WorldPlugin;
 
+mod ability;
 mod camera;
 mod cursor_caster;
 mod debug;
@@ -29,6 +31,7 @@ fn main() {
             PhysicsPlugins::default(),
             PlayerPlugin,
             CursorCasterPlugin,
+            AbilityPlugin,
         ))
         .insert_resource(Msaa::Sample8)
         .run();

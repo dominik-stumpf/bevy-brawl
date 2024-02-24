@@ -13,7 +13,7 @@ impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(PanOrbitCameraPlugin)
             // .add_systems(Startup, spawn_panorbit_camera)
-            .add_systems(Startup, spawn_camera)
+            .add_systems(Startup, (spawn_camera, spawn_light))
             .add_systems(
                 Update,
                 (
@@ -62,15 +62,17 @@ fn spawn_camera(mut commands: Commands, asset_server: Res<AssetServer>) {
         BloomSettings::default(),
     ));
 
-    commands.insert_resource(AmbientLight {
-        color: Color::rgb_u8(210, 220, 240),
-        brightness: 0.1,
-    });
-
     commands.insert_resource(Cubemap {
         is_loaded: false,
         index: 0,
         image_handle: skybox_handle,
+    });
+}
+
+fn spawn_light(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.insert_resource(AmbientLight {
+        color: Color::rgb_u8(210, 220, 240),
+        brightness: 0.1,
     });
 
     commands.spawn(DirectionalLightBundle {

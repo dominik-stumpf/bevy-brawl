@@ -325,7 +325,6 @@ fn apply_gravity(
 /// Slows down movement in the XZ plane.
 fn apply_movement_damping(mut query: Query<(&MovementDampingFactor, &mut LinearVelocity)>) {
     for (damping_factor, mut linear_velocity) in &mut query {
-        println!("{:?}", damping_factor);
         // We could use `LinearDamping`, but we don't want to dampen movement along the Y axis
         linear_velocity.x *= damping_factor.0;
         linear_velocity.z *= damping_factor.0;

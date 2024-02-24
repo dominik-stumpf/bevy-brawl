@@ -1,8 +1,10 @@
 use crate::{camera::utils::lock_camera_to_entity, GameLayer};
+use ability_caster_controller::AbilityCasterControllerPlugin;
 use bevy::{prelude::*, transform::TransformSystem};
 use bevy_xpbd_3d::{math::*, prelude::*};
 use character_controller::{CharacterControllerBundle, CharacterControllerPlugin};
 
+mod ability_caster_controller;
 mod character_controller;
 
 pub struct PlayerPlugin;
@@ -10,6 +12,7 @@ pub struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(CharacterControllerPlugin)
+            .add_plugins(AbilityCasterControllerPlugin)
             .add_systems(Startup, spawn_player)
             .add_systems(
                 PostUpdate,
