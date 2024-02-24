@@ -110,7 +110,6 @@ fn handle_projectile_collision(
         for collided_entity in colliding_entities.iter() {
             if terrain_query.contains(*collided_entity) {
                 projectile.is_alive = false;
-                println!("collision with {:?}", *collided_entity);
             }
         }
     }

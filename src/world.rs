@@ -84,6 +84,7 @@ fn add_terrain_component_recursively(
         return;
     };
     if terrain.is_terrain_added_recursively {
+        info_once!("Loaded all terrain");
         return;
     }
     let colliders = collider_query.iter_many(scene_manager.iter_instance_entities(**instance));
