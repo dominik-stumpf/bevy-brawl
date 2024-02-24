@@ -46,6 +46,21 @@ fn spawn_world_map(
 
     commands.spawn((
         RigidBody::Dynamic,
+        Collider::sphere(1.0),
+        CollisionLayers::new(GameLayer::Prop, LayerMask::ALL),
+        PbrBundle {
+            mesh: meshes.add(Sphere::new(1.0)),
+            material: materials.add(StandardMaterial {
+                emissive: Color::PURPLE * 500.0,
+                ..default()
+            }),
+            transform: Transform::from_xyz(-5.0, 9.0, -5.0),
+            ..default()
+        },
+    ));
+
+    commands.spawn((
+        RigidBody::Dynamic,
         Collider::cuboid(1.0, 1.0, 1.0),
         CollisionLayers::new(GameLayer::Prop, LayerMask::ALL),
         PbrBundle {

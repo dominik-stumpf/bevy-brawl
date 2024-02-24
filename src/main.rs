@@ -41,7 +41,7 @@ pub enum GameLayer {
     Player,
     /// Mobile object: AI controlled character
     Mob,
-    /// Part of the map that has collider
+    /// Part of the world map that has collider
     Terrain,
     /// Flying object propelled by exernal force
     Projectile,

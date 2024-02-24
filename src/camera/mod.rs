@@ -1,5 +1,8 @@
 use self::skybox::{Cubemap, CUBEMAPS};
-use bevy::{core_pipeline::Skybox, prelude::*};
+use bevy::{
+    core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping, Skybox},
+    prelude::*,
+};
 use bevy_panorbit_camera::{PanOrbitCamera, PanOrbitCameraPlugin};
 
 mod skybox;
@@ -29,6 +32,11 @@ pub struct MainCamera {
 fn spawn_camera(mut commands: Commands, asset_server: Res<AssetServer>) {
     let initial_position = Vec3::new(0.0, 20.0, 12.0);
     let camera = Camera3dBundle {
+        camera: Camera {
+            hdr: true,
+            ..default()
+        },
+        tonemapping: Tonemapping::TonyMcMapface,
         transform: Transform::from_xyz(initial_position.x, initial_position.y, initial_position.z)
             .looking_at(Vec3::ZERO, -Vec3::Z),
         ..default()
@@ -50,6 +58,7 @@ fn spawn_camera(mut commands: Commands, asset_server: Res<AssetServer>) {
                 .load("environment_maps/kloofendal_43d_clear_puresky_spec_1k.ktx2"),
             intensity: 1200.0,
         },
+        BloomSettings::default(),
     ));
 
     commands.insert_resource(AmbientLight {

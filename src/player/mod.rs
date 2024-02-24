@@ -54,33 +54,3 @@ fn spawn_player(
         .with_movement(30.0, 0.92, 7.0, (30.0 as Scalar).to_radians()),
     ));
 }
-
-// fn update_player_position(
-//     mut player_query: Query<(&mut Transform, &Player)>,
-//     marker_query: Query<&Transform, (With<PositionMarker>, Without<Player>)>,
-//     time: Res<Time>,
-// ) {
-//     let marker = marker_query.single();
-//     let (mut player_transform, player) = player_query.single_mut();
-//
-//     let direction = marker.translation.xz() - player_transform.translation.xz();
-//     let distance = direction.length_squared();
-//
-//     if distance >= 0.5 {
-//         let target_rotation = (direction.x).atan2(direction.y);
-//         player_transform.rotation = Quat::from_euler(EulerRot::XYZ, 0., target_rotation, 0.);
-//
-//         let step_magnitude = MOVEMENT_SPEED * time.delta_seconds();
-//         if step_magnitude.powi(2) > distance {
-//             player_transform.translation = Transform::from_xyz(
-//                 marker.translation.x,
-//                 player.dimension.y * 0.5,
-//                 marker.translation.z,
-//             )
-//             .translation;
-//         } else {
-//             let normalized = direction.normalize();
-//             player_transform.translation += vec3(normalized.x, 0., normalized.y) * step_magnitude;
-//         }
-//     }
-// }
