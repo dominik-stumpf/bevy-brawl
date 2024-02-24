@@ -66,7 +66,7 @@ fn update_cursor_position(
 }
 
 #[derive(Component)]
-struct PositionMarker;
+pub struct PositionMarker;
 
 fn update_marker_position(
     mut marker_query: Query<&mut Transform, With<PositionMarker>>,

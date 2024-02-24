@@ -1,14 +1,12 @@
 use bevy::prelude::*;
 use bevy_xpbd_3d::{plugins::PhysicsPlugins, prelude::PhysicsLayer};
 use camera::CameraPlugin;
-use character_controller::CharacterControllerPlugin;
 use cursor_caster::CursorCasterPlugin;
 use debug::DebugPlugin;
 use player::PlayerPlugin;
 use world::WorldPlugin;
 
 mod camera;
-mod character_controller;
 mod cursor_caster;
 mod debug;
 mod player;
@@ -29,11 +27,10 @@ fn main() {
             WorldPlugin,
             CameraPlugin,
             PhysicsPlugins::default(),
-            CharacterControllerPlugin,
             PlayerPlugin,
             CursorCasterPlugin,
         ))
-        .insert_resource(Msaa::default())
+        .insert_resource(Msaa::Sample8)
         .run();
 }
 
@@ -48,4 +45,6 @@ pub enum GameLayer {
     Terrain,
     /// Flying object propelled by exernal force
     Projectile,
+    /// Destructible object
+    Prop,
 }

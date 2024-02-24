@@ -1,6 +1,10 @@
 use bevy::{ecs::query::Has, prelude::*};
 use bevy_xpbd_3d::{math::*, prelude::*, SubstepSchedule, SubstepSet};
 
+use crate::cursor_caster::PositionMarker;
+
+use super::Player;
+
 pub struct CharacterControllerPlugin;
 
 impl Plugin for CharacterControllerPlugin {
@@ -9,8 +13,9 @@ impl Plugin for CharacterControllerPlugin {
             .add_systems(
                 Update,
                 (
-                    keyboard_input,
-                    gamepad_input,
+                    // keyboard_input,
+                    // gamepad_input,
+                    mouse_input,
                     update_grounded,
                     apply_gravity,
                     movement,
@@ -103,7 +108,7 @@ impl MovementBundle {
 
 impl Default for MovementBundle {
     fn default() -> Self {
-        Self::new(30.0, 0.9, 7.0, PI * 0.45)
+        Self::new(35.0, 0.0, 7.0, PI * 0.45)
     }
 }
 
@@ -146,6 +151,8 @@ impl CharacterControllerBundle {
 fn keyboard_input(
     mut movement_event_writer: EventWriter<MovementAction>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
+    player_query: Query<&Transform, With<Player>>,
+    mut gizmos: Gizmos,
 ) {
     let up = keyboard_input.any_pressed([KeyCode::KeyW, KeyCode::ArrowUp]);
     let down = keyboard_input.any_pressed([KeyCode::KeyS, KeyCode::ArrowDown]);
@@ -153,8 +160,18 @@ fn keyboard_input(
     let right = keyboard_input.any_pressed([KeyCode::KeyD, KeyCode::ArrowRight]);
 
     let horizontal = right as i8 - left as i8;
-    let vertical = up as i8 - down as i8;
+    let vertical = down as i8 - up as i8;
     let direction = Vector2::new(horizontal as Scalar, vertical as Scalar).clamp_length_max(1.0);
+
+    let Ok(player_transform) = player_query.get_single() else {
+        return;
+    };
+
+    gizmos.ray(
+        player_transform.translation,
+        Vec3::new(direction.x, 0.0, direction.y),
+        Color::BISQUE,
+    );
 
     if direction != Vector2::ZERO {
         movement_event_writer.send(MovementAction::Move(direction));
@@ -162,6 +179,37 @@ fn keyboard_input(
 
     if keyboard_input.just_pressed(KeyCode::Space) {
         movement_event_writer.send(MovementAction::Jump);
+    }
+}
+
+fn mouse_input(
+    player_query: Query<&Transform, With<Player>>,
+    marker_query: Query<&Transform, (With<PositionMarker>, Without<Player>)>,
+    mut movement_event_writer: EventWriter<MovementAction>,
+    mut gizmos: Gizmos,
+) {
+    let Ok(marker_transform) = marker_query.get_single() else {
+        return;
+    };
+    let Ok(player_transform) = player_query.get_single() else {
+        return;
+    };
+
+    let direction = marker_transform.translation.xz() - player_transform.translation.xz();
+    let distance = direction.length_squared();
+
+    gizmos.ray(
+        player_transform.translation,
+        Vec3::new(direction.x, 0.0, direction.y),
+        Color::BISQUE,
+    );
+
+    if distance < 0.8 {
+        return;
+    }
+
+    if direction != Vector2::ZERO {
+        movement_event_writer.send(MovementAction::Move(direction.clamp_length_max(1.0)));
     }
 }
 
@@ -248,7 +296,7 @@ fn movement(
             match event {
                 MovementAction::Move(direction) => {
                     linear_velocity.x += direction.x * movement_acceleration.0 * delta_time;
-                    linear_velocity.z -= direction.y * movement_acceleration.0 * delta_time;
+                    linear_velocity.z -= direction.y * -1.0 * movement_acceleration.0 * delta_time;
                 }
                 MovementAction::Jump => {
                     if is_grounded {

@@ -27,20 +27,21 @@ pub struct MainCamera {
 }
 
 fn spawn_camera(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let initial_position = Vec3::new(15.0, 25.0, 15.0);
+    let initial_position = Vec3::new(0.0, 20.0, 12.0);
     let camera = Camera3dBundle {
         transform: Transform::from_xyz(initial_position.x, initial_position.y, initial_position.z)
-            .looking_at(Vec3::ZERO, Vec3::Y),
+            .looking_at(Vec3::ZERO, -Vec3::Z),
         ..default()
     };
     let skybox_handle = asset_server.load(CUBEMAPS[0].0);
 
     commands.spawn((
+        Name::new("MainCamera"),
         camera,
         MainCamera { initial_position },
         Skybox {
             image: skybox_handle.clone(),
-            brightness: 150.0,
+            brightness: 300.0,
         },
         EnvironmentMapLight {
             diffuse_map: asset_server

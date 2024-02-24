@@ -1,7 +1,7 @@
 use crate::GameLayer;
 use bevy::prelude::*;
 use bevy_xpbd_3d::{
-    components::{CollisionLayers, Friction, LayerMask, RigidBody},
+    components::{CollisionLayers, LayerMask, RigidBody},
     plugins::collision::{AsyncSceneCollider, Collider, ComputedCollider},
 };
 
@@ -19,7 +19,7 @@ impl Plugin for WorldPlugin {
 }
 
 #[derive(Component)]
-pub struct Ground;
+pub struct Terrain;
 
 fn spawn_world_map(
     mut commands: Commands,
@@ -41,11 +41,13 @@ fn spawn_world_map(
             ),
         ),
         RigidBody::Static,
+        Terrain,
     ));
 
     commands.spawn((
         RigidBody::Dynamic,
         Collider::cuboid(1.0, 1.0, 1.0),
+        CollisionLayers::new(GameLayer::Prop, LayerMask::ALL),
         PbrBundle {
             mesh: meshes.add(Cuboid::default()),
             material: materials.add(Color::rgb(0.8, 0.7, 0.6)),
@@ -53,38 +55,6 @@ fn spawn_world_map(
             ..default()
         },
     ));
-}
-
-fn spawn_ground(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-    asset_server: Res<AssetServer>,
-) {
-    let ground_material = StandardMaterial {
-        normal_map_texture: Some(asset_server.load("textures/coast_sand_rocks_02_nor_gl_1k.jpg")),
-        base_color_texture: Some(asset_server.load("textures/coast_sand_rocks_02_diff_1k.jpg")),
-        occlusion_texture: Some(asset_server.load("textures/coast_sand_rocks_02_ao_1k.jpg")),
-        depth_map: Some(asset_server.load("textures/coast_sand_rocks_02_disp_1k.jpg")),
-        perceptual_roughness: 0.8,
-        reflectance: 0.2,
-        parallax_depth_scale: -0.04,
-        parallax_mapping_method: ParallaxMappingMethod::Relief { max_steps: 8 },
-        ..default()
-    };
-
-    let ground_mesh = Mesh::from(Circle::new(16.0))
-        .with_generated_tangents()
-        .expect("generate tangets for normal map");
-
-    let ground = PbrBundle {
-        mesh: meshes.add(ground_mesh),
-        material: materials.add(ground_material),
-        transform: Transform::from_rotation(Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2)),
-        ..default()
-    };
-
-    commands.spawn((ground, Ground));
 }
 
 fn spawn_light(mut commands: Commands) {

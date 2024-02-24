@@ -1,23 +1,22 @@
+use crate::{camera::utils::lock_camera_to_entity, GameLayer};
 use bevy::{prelude::*, transform::TransformSystem};
 use bevy_xpbd_3d::{math::*, prelude::*};
+use character_controller::{CharacterControllerBundle, CharacterControllerPlugin};
 
-use crate::{
-    camera::utils::lock_camera_to_entity, character_controller::CharacterControllerBundle,
-    GameLayer,
-};
-
-const MOVEMENT_SPEED: f32 = 8.0;
+mod character_controller;
 
 pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_player).add_systems(
-            PostUpdate,
-            lock_camera_to_entity::<Player>
-                .after(PhysicsSet::Sync)
-                .before(TransformSystem::TransformPropagate),
-        );
+        app.add_plugins(CharacterControllerPlugin)
+            .add_systems(Startup, spawn_player)
+            .add_systems(
+                PostUpdate,
+                lock_camera_to_entity::<Player>
+                    .after(PhysicsSet::Sync)
+                    .before(TransformSystem::TransformPropagate),
+            );
     }
 }
 
@@ -41,7 +40,16 @@ fn spawn_player(
         CharacterControllerBundle::new(
             Collider::capsule(1.0, 0.4),
             Vector::NEG_Y * 9.81,
-            CollisionLayers::new(GameLayer::Player, GameLayer::Terrain),
+            CollisionLayers::new(
+                GameLayer::Player,
+                [
+                    GameLayer::Terrain,
+                    GameLayer::Prop,
+                    GameLayer::Projectile,
+                    GameLayer::Player,
+                    GameLayer::Mob,
+                ],
+            ),
         )
         .with_movement(30.0, 0.92, 7.0, (30.0 as Scalar).to_radians()),
     ));
