@@ -17,6 +17,7 @@ impl Plugin for CameraPlugin {
             .add_systems(
                 Update,
                 (
+                    skybox::animate_light_direction,
                     skybox::cycle_cubemap_asset,
                     skybox::asset_loaded.after(skybox::cycle_cubemap_asset),
                 ),
@@ -49,27 +50,37 @@ fn spawn_camera(mut commands: Commands, asset_server: Res<AssetServer>) {
         MainCamera { initial_position },
         Skybox {
             image: skybox_handle.clone(),
-            brightness: 300.0,
+            brightness: 100.0,
         },
         EnvironmentMapLight {
             diffuse_map: asset_server
                 .load("environment_maps/kloofendal_43d_clear_puresky_diff_1k.ktx2"),
             specular_map: asset_server
                 .load("environment_maps/kloofendal_43d_clear_puresky_spec_1k.ktx2"),
-            intensity: 1200.0,
+            intensity: 500.0,
         },
         BloomSettings::default(),
     ));
 
     commands.insert_resource(AmbientLight {
         color: Color::rgb_u8(210, 220, 240),
-        brightness: 0.2,
+        brightness: 0.1,
     });
 
     commands.insert_resource(Cubemap {
         is_loaded: false,
         index: 0,
         image_handle: skybox_handle,
+    });
+
+    commands.spawn(DirectionalLightBundle {
+        transform: Transform::from_translation(Vec3::ONE).looking_at(Vec3::ZERO, Vec3::Y),
+        directional_light: DirectionalLight {
+            shadows_enabled: true,
+            illuminance: 1000.0,
+            ..default()
+        },
+        ..default()
     });
 }
 

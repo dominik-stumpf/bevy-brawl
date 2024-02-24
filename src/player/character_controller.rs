@@ -51,7 +51,7 @@ pub struct Grounded;
 pub struct MovementAcceleration(Scalar);
 
 /// The damping factor used for slowing down movement.
-#[derive(Component)]
+#[derive(Component, Debug)]
 pub struct MovementDampingFactor(Scalar);
 
 /// The strength of a jump.
@@ -108,7 +108,7 @@ impl MovementBundle {
 
 impl Default for MovementBundle {
     fn default() -> Self {
-        Self::new(35.0, 0.0, 7.0, PI * 0.45)
+        Self::new(35.0, 0.01, 7.0, PI * 0.45)
     }
 }
 
@@ -325,6 +325,7 @@ fn apply_gravity(
 /// Slows down movement in the XZ plane.
 fn apply_movement_damping(mut query: Query<(&MovementDampingFactor, &mut LinearVelocity)>) {
     for (damping_factor, mut linear_velocity) in &mut query {
+        println!("{:?}", damping_factor);
         // We could use `LinearDamping`, but we don't want to dampen movement along the Y axis
         linear_velocity.x *= damping_factor.0;
         linear_velocity.z *= damping_factor.0;

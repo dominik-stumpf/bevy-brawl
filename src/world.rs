@@ -9,12 +9,7 @@ pub struct WorldPlugin;
 
 impl Plugin for WorldPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, (spawn_world_map, spawn_light))
-            .insert_resource(ClearColor(Color::rgb(0.0, 0.0, 0.0)))
-            .insert_resource(AmbientLight {
-                color: Color::WHITE,
-                brightness: 0.2,
-            });
+        app.add_systems(Startup, spawn_world_map);
     }
 }
 
