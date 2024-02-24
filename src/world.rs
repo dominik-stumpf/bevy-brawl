@@ -1,5 +1,5 @@
 use crate::GameLayer;
-use bevy::prelude::*;
+use bevy::{prelude::*, scene::SceneInstance};
 use bevy_xpbd_3d::{
     components::{CollisionLayers, LayerMask, RigidBody},
     plugins::collision::{AsyncSceneCollider, Collider, ComputedCollider},
@@ -9,12 +9,17 @@ pub struct WorldPlugin;
 
 impl Plugin for WorldPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_world_map);
+        app.add_systems(Startup, spawn_world_map).add_systems(
+            Update,
+            add_terrain_component_recursively.run_if(any_with_component::<Terrain>),
+        );
     }
 }
 
 #[derive(Component)]
-pub struct Terrain;
+pub struct Terrain {
+    is_terrain_added_recursively: bool,
+}
 
 fn spawn_world_map(
     mut commands: Commands,
@@ -36,7 +41,9 @@ fn spawn_world_map(
             ),
         ),
         RigidBody::Static,
-        Terrain,
+        Terrain {
+            is_terrain_added_recursively: false,
+        },
     ));
 
     commands.spawn((
@@ -67,26 +74,23 @@ fn spawn_world_map(
     ));
 }
 
-fn spawn_light(mut commands: Commands) {
-    let point_light = PointLightBundle {
-        point_light: PointLight {
-            shadows_enabled: true,
-            ..default()
-        },
-        transform: Transform::from_xyz(4., 4., 4.),
-        ..default()
+fn add_terrain_component_recursively(
+    mut world_map_query: Query<(&SceneInstance, &mut Terrain)>,
+    mut commands: Commands,
+    collider_query: Query<Entity, With<Collider>>,
+    scene_manager: Res<SceneSpawner>,
+) {
+    let Ok((instance, mut terrain)) = world_map_query.get_single_mut() else {
+        return;
     };
-
-    let directional_light = DirectionalLightBundle {
-        transform: Transform::from_translation(Vec3::ONE).looking_at(Vec3::ZERO, Vec3::Y),
-        directional_light: DirectionalLight {
-            shadows_enabled: true,
-            illuminance: 500.0,
-            ..default()
-        },
-        ..default()
-    };
-
-    commands.spawn(directional_light);
-    commands.spawn(point_light);
+    if terrain.is_terrain_added_recursively {
+        return;
+    }
+    let colliders = collider_query.iter_many(scene_manager.iter_instance_entities(**instance));
+    for collider_entity in colliders {
+        commands.entity(collider_entity).insert(Terrain {
+            is_terrain_added_recursively: true,
+        });
+        terrain.is_terrain_added_recursively = true;
+    }
 }

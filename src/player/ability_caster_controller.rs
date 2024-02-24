@@ -20,7 +20,9 @@ fn initiate_ability_cast(
     player_query: Query<(Entity, &Transform), With<Player>>,
     cursor_position: Res<CursorPosition>,
 ) {
-    let Ok((caster, transform)) = player_query.get_single() else {return;};
+    let Ok((caster, transform)) = player_query.get_single() else {
+        return;
+    };
 
     for event in keyboard_events.read() {
         if event.key_code == KeyCode::KeyQ {

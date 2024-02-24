@@ -33,7 +33,7 @@ struct MagicMissile {
 impl Default for MagicMissile {
     fn default() -> Self {
         Self {
-            life_timer: Timer::from_seconds(1.5, TimerMode::Once),
+            life_timer: Timer::from_seconds(1.4, TimerMode::Once),
             is_alive: true,
         }
     }
@@ -52,7 +52,7 @@ fn spawn_projectile(
             commands.spawn((
                 Name::new("MagicMissile"),
                 MagicMissile::default(),
-                Collider::sphere(1.0),
+                Collider::sphere(0.6),
                 CollisionLayers::new(GameLayer::Projectile, LayerMask::ALL),
                 PbrBundle {
                     mesh: meshes.add(Sphere::new(1.0)),
@@ -81,7 +81,7 @@ fn move_projectile(
 ) {
     for mut projectile_transform in &mut projectile_query {
         let direction = -projectile_transform.local_x();
-        projectile_transform.translation += direction * 16.0 * time.delta_seconds();
+        projectile_transform.translation += direction * 20.0 * time.delta_seconds();
     }
 }
 
@@ -110,7 +110,7 @@ fn handle_projectile_collision(
         for collided_entity in colliding_entities.iter() {
             if terrain_query.contains(*collided_entity) {
                 projectile.is_alive = false;
-                println!("terrain collision");
+                println!("collision with {:?}", *collided_entity);
             }
         }
     }
