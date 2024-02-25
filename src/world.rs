@@ -1,5 +1,5 @@
-use crate::GameLayer;
-use bevy::{prelude::*, scene::SceneInstance};
+use crate::prelude::*;
+use bevy::scene::SceneInstance;
 use bevy_xpbd_3d::{
     components::{CollisionLayers, LayerMask, RigidBody},
     plugins::collision::{AsyncSceneCollider, Collider, ComputedCollider},

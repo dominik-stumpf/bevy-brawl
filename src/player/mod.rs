@@ -1,6 +1,6 @@
-use crate::{camera::utils::lock_camera_to_entity, GameLayer};
+use crate::{camera::utils::lock_camera_to_entity, prelude::*};
 use ability_caster_controller::AbilityCasterControllerPlugin;
-use bevy::{prelude::*, transform::TransformSystem};
+use bevy::transform::TransformSystem;
 use bevy_xpbd_3d::{math::*, prelude::*};
 use character_controller::{CharacterControllerBundle, CharacterControllerPlugin};
 
