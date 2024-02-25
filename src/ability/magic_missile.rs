@@ -19,7 +19,8 @@ impl Plugin for MagicMissilePlugin {
                 move_projectile,
                 control_projectile_timer,
                 handle_projectile_collision,
-            ),
+            )
+                .run_if(in_state(GameState::InGame)),
         );
     }
 }
@@ -85,9 +86,18 @@ fn move_projectile(
     }
 }
 
-fn despawn_projectile(mut commands: Commands, projectile_query: Query<(Entity, &MagicMissile)>) {
+fn despawn_projectile(
+    mut commands: Commands,
+    projectile_query: Query<(Entity, &MagicMissile)>,
+    mut play_sfx: EventWriter<audio::EventPlaySFX>,
+    assets: Res<GameAssets>,
+) {
     for (entity, projectile) in &projectile_query {
         if !projectile.is_alive {
+            println!("audio");
+            play_sfx.send(audio::EventPlaySFX::new(
+                assets.missile_explosion_2_sfx.clone(),
+            ));
             commands.entity(entity).despawn_recursive();
         }
     }
@@ -110,6 +120,7 @@ fn handle_projectile_collision(
         for collided_entity in colliding_entities.iter() {
             if terrain_query.contains(*collided_entity) {
                 projectile.is_alive = false;
+                break;
             }
         }
     }

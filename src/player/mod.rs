@@ -14,12 +14,13 @@ impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(CharacterControllerPlugin)
             .add_plugins(AbilityCasterControllerPlugin)
-            .add_systems(Startup, spawn_player)
+            .add_systems(OnEnter(GameState::InGame), spawn_player)
             .add_systems(
                 PostUpdate,
                 lock_camera_to_entity::<Player>
                     .after(PhysicsSet::Sync)
-                    .before(TransformSystem::TransformPropagate),
+                    .before(TransformSystem::TransformPropagate)
+                    .run_if(in_state(GameState::InGame)),
             );
     }
 }
@@ -31,12 +32,14 @@ fn spawn_player(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
+    assets: Res<GameAssets>,
 ) {
     let active_abilities = ActiveAbilities(vec![AbilityCastInitiator {
         ability_type: Ability::MagicMissile,
         cast_time: Timer::from_seconds(0.5, TimerMode::Once),
         recharge_time: Timer::from_seconds(2.0, TimerMode::Once),
         keyboard_shortcut: KeyCode::KeyQ,
+        cast_sfx: assets.missile_cast_sfx.clone(),
     }]);
 
     commands.spawn((

@@ -5,6 +5,7 @@ use crate::{
     prelude::*,
 };
 use bevy::input::keyboard::KeyboardInput;
+use bevy_kira_audio::AudioSource;
 
 pub struct AbilityCasterControllerPlugin;
 
@@ -20,6 +21,7 @@ impl Plugin for AbilityCasterControllerPlugin {
 fn initiate_ability_cast(
     mut keyboard_events: EventReader<KeyboardInput>,
     mut cast_event: EventWriter<AbilityCast>,
+    mut play_sfx: EventWriter<audio::EventPlaySFX>,
     mut player_query: Query<
         (
             Entity,
@@ -55,6 +57,8 @@ fn initiate_ability_cast(
                         timer: ability_initiator.recharge_time.clone(),
                     }]));
                 // ability_initiator.recharge_cooldown = Some(ability_initiator.recharge_time);
+
+                play_sfx.send(audio::EventPlaySFX::new(ability_initiator.cast_sfx.clone()));
                 cast_event.send(AbilityCast {
                     ability: ability_initiator.ability_type,
                     caster,
@@ -87,6 +91,7 @@ pub struct AbilityCastInitiator {
     // cast_animation: ...,
     pub cast_time: Timer,
     pub recharge_time: Timer,
+    pub cast_sfx: Handle<AudioSource>,
     // pub cast_cooldown: Option<Timer>,
     // pub recharge_cooldown: Option<Timer>,
     pub ability_type: Ability,
