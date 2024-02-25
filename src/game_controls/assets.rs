@@ -10,4 +10,6 @@ pub struct GameAssets {
     pub diffuse_map: Handle<Image>,
     #[asset(path = "environment_maps/kloofendal_43d_clear_puresky_spec_1k.ktx2")]
     pub specular_map: Handle<Image>,
+    #[asset(path = "models/test_map.glb#Scene0")]
+    pub world_map: Handle<Scene>,
 }

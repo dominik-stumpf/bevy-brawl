@@ -9,10 +9,13 @@ pub struct WorldPlugin;
 
 impl Plugin for WorldPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_world_map).add_systems(
-            Update,
-            add_terrain_component_recursively.run_if(any_with_component::<Terrain>),
-        );
+        app.add_systems(OnEnter(GameState::InGame), spawn_world_map)
+            .add_systems(
+                Update,
+                add_terrain_component_recursively
+                    .run_if(any_with_component::<Terrain>)
+                    .run_if(in_state(GameState::InGame)),
+            );
     }
 }
 
@@ -25,12 +28,12 @@ fn spawn_world_map(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    asset_server: Res<AssetServer>,
+    assets: Res<GameAssets>,
 ) {
     commands.spawn((
         Name::new("WorldMap"),
         SceneBundle {
-            scene: asset_server.load("models/test_map.glb#Scene0"),
+            scene: assets.world_map.clone(),
             ..default()
         },
         AsyncSceneCollider::new(Some(ComputedCollider::ConvexHull)).with_layers_for_name(
