@@ -13,8 +13,6 @@ impl Plugin for CharacterControllerPlugin {
             .add_systems(
                 Update,
                 (
-                    // keyboard_input,
-                    // gamepad_input,
                     mouse_input,
                     update_grounded,
                     apply_gravity,
@@ -35,7 +33,6 @@ impl Plugin for CharacterControllerPlugin {
 #[derive(Event)]
 pub enum MovementAction {
     Move(Vector2),
-    Jump,
 }
 
 /// A marker component indicating that an entity is using a character controller.
@@ -147,41 +144,6 @@ impl CharacterControllerBundle {
     }
 }
 
-/// Sends [`MovementAction`] events based on keyboard input.
-fn keyboard_input(
-    mut movement_event_writer: EventWriter<MovementAction>,
-    keyboard_input: Res<ButtonInput<KeyCode>>,
-    player_query: Query<&Transform, With<Player>>,
-    mut gizmos: Gizmos,
-) {
-    let up = keyboard_input.any_pressed([KeyCode::KeyW, KeyCode::ArrowUp]);
-    let down = keyboard_input.any_pressed([KeyCode::KeyS, KeyCode::ArrowDown]);
-    let left = keyboard_input.any_pressed([KeyCode::KeyA, KeyCode::ArrowLeft]);
-    let right = keyboard_input.any_pressed([KeyCode::KeyD, KeyCode::ArrowRight]);
-
-    let horizontal = right as i8 - left as i8;
-    let vertical = down as i8 - up as i8;
-    let direction = Vector2::new(horizontal as Scalar, vertical as Scalar).clamp_length_max(1.0);
-
-    let Ok(player_transform) = player_query.get_single() else {
-        return;
-    };
-
-    gizmos.ray(
-        player_transform.translation,
-        Vec3::new(direction.x, 0.0, direction.y),
-        Color::BISQUE,
-    );
-
-    if direction != Vector2::ZERO {
-        movement_event_writer.send(MovementAction::Move(direction));
-    }
-
-    if keyboard_input.just_pressed(KeyCode::Space) {
-        movement_event_writer.send(MovementAction::Jump);
-    }
-}
-
 fn mouse_input(
     player_query: Query<&Transform, With<Player>>,
     marker_query: Query<&Transform, (With<PositionMarker>, Without<Player>)>,
@@ -210,40 +172,6 @@ fn mouse_input(
 
     if direction != Vector2::ZERO {
         movement_event_writer.send(MovementAction::Move(direction.clamp_length_max(1.0)));
-    }
-}
-
-/// Sends [`MovementAction`] events based on gamepad input.
-fn gamepad_input(
-    mut movement_event_writer: EventWriter<MovementAction>,
-    gamepads: Res<Gamepads>,
-    axes: Res<Axis<GamepadAxis>>,
-    buttons: Res<ButtonInput<GamepadButton>>,
-) {
-    for gamepad in gamepads.iter() {
-        let axis_lx = GamepadAxis {
-            gamepad,
-            axis_type: GamepadAxisType::LeftStickX,
-        };
-        let axis_ly = GamepadAxis {
-            gamepad,
-            axis_type: GamepadAxisType::LeftStickY,
-        };
-
-        if let (Some(x), Some(y)) = (axes.get(axis_lx), axes.get(axis_ly)) {
-            movement_event_writer.send(MovementAction::Move(
-                Vector2::new(x as Scalar, y as Scalar).clamp_length_max(1.0),
-            ));
-        }
-
-        let jump_button = GamepadButton {
-            gamepad,
-            button_type: GamepadButtonType::South,
-        };
-
-        if buttons.just_pressed(jump_button) {
-            movement_event_writer.send(MovementAction::Jump);
-        }
     }
 }
 
@@ -290,18 +218,11 @@ fn movement(
     let delta_time = time.delta_seconds_f64().adjust_precision();
 
     for event in movement_event_reader.read() {
-        for (movement_acceleration, jump_impulse, mut linear_velocity, is_grounded) in
-            &mut controllers
-        {
+        for (movement_acceleration, _, mut linear_velocity, _) in &mut controllers {
             match event {
                 MovementAction::Move(direction) => {
                     linear_velocity.x += direction.x * movement_acceleration.0 * delta_time;
                     linear_velocity.z -= direction.y * -1.0 * movement_acceleration.0 * delta_time;
-                }
-                MovementAction::Jump => {
-                    if is_grounded {
-                        linear_velocity.y = jump_impulse.0;
-                    }
                 }
             }
         }
