@@ -58,7 +58,7 @@ fn initiate_ability_cast(
                     }]));
                 // ability_initiator.recharge_cooldown = Some(ability_initiator.recharge_time);
 
-                play_sfx.send(audio::EventPlaySFX::new(ability_initiator.cast_sfx.clone()));
+                play_sfx.send(audio::EventPlaySFX::new(ability_initiator.cast_sfx));
                 cast_event.send(AbilityCast {
                     ability: ability_initiator.ability_type,
                     caster,
@@ -91,7 +91,7 @@ pub struct AbilityCastInitiator {
     // cast_animation: ...,
     pub cast_time: Timer,
     pub recharge_time: Timer,
-    pub cast_sfx: Handle<AudioSource>,
+    pub cast_sfx: audio::SFXKind,
     // pub cast_cooldown: Option<Timer>,
     // pub recharge_cooldown: Option<Timer>,
     pub ability_type: Ability,

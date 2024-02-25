@@ -12,24 +12,39 @@ impl Plugin for AudioPlugin {
 }
 
 pub mod prelude {
-    pub use super::EventPlaySFX;
+    pub use super::{EventPlaySFX, SFXKind};
 }
 
 #[derive(Event)]
 pub struct EventPlaySFX {
-    pub audio_source: Handle<AudioSource>,
+    pub audio_source: SFXKind,
 }
 
 impl EventPlaySFX {
-    pub fn new(audio_source: Handle<AudioSource>) -> Self {
+    pub fn new(audio_source: SFXKind) -> Self {
         return Self { audio_source };
     }
 }
 
-// pub(crate) enum SFXKind {/* ... */}
+#[derive(Clone, Copy)]
+pub enum SFXKind {
+    MagicMissileExplosion,
+    MagicMissileCast,
+}
 
-fn play_sfx(audio: Res<Audio>, mut play_sfx_event: EventReader<EventPlaySFX>) {
+fn resolve_sfx_asset(sfx: SFXKind, assets: &Res<GameAssets>) -> Handle<AudioSource> {
+    match sfx {
+        SFXKind::MagicMissileCast => assets.missile_cast_sfx.clone(),
+        SFXKind::MagicMissileExplosion => assets.missile_explosion_2_sfx.clone(),
+    }
+}
+
+fn play_sfx(
+    audio: Res<Audio>,
+    mut play_sfx_event: EventReader<EventPlaySFX>,
+    assets: Res<GameAssets>,
+) {
     for play_event in play_sfx_event.read() {
-        audio.play(play_event.audio_source.clone());
+        audio.play(resolve_sfx_asset(play_event.audio_source, &assets));
     }
 }

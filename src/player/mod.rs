@@ -32,15 +32,23 @@ fn spawn_player(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    assets: Res<GameAssets>,
 ) {
-    let active_abilities = ActiveAbilities(vec![AbilityCastInitiator {
-        ability_type: Ability::MagicMissile,
-        cast_time: Timer::from_seconds(0.5, TimerMode::Once),
-        recharge_time: Timer::from_seconds(2.0, TimerMode::Once),
-        keyboard_shortcut: KeyCode::KeyQ,
-        cast_sfx: assets.missile_cast_sfx.clone(),
-    }]);
+    let active_abilities = ActiveAbilities(vec![
+        AbilityCastInitiator {
+            ability_type: Ability::MagicMissile,
+            cast_time: Timer::from_seconds(0.5, TimerMode::Once),
+            recharge_time: Timer::from_seconds(1.0, TimerMode::Once),
+            keyboard_shortcut: KeyCode::KeyA,
+            cast_sfx: audio::SFXKind::MagicMissileCast,
+        },
+        AbilityCastInitiator {
+            ability_type: Ability::Fireball,
+            cast_time: Timer::from_seconds(0.5, TimerMode::Once),
+            recharge_time: Timer::from_seconds(1.5, TimerMode::Once),
+            keyboard_shortcut: KeyCode::KeyS,
+            cast_sfx: audio::SFXKind::MagicMissileCast,
+        },
+    ]);
 
     commands.spawn((
         Name::new("Player"),
