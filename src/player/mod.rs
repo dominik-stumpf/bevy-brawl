@@ -34,20 +34,34 @@ fn spawn_player(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let active_abilities = ActiveAbilities(vec![
-        AbilityCastInitiator {
-            ability_type: Ability::MagicMissile,
-            cast_time: Timer::from_seconds(0.5, TimerMode::Once),
-            recharge_time: Timer::from_seconds(1.0, TimerMode::Once),
-            keyboard_shortcut: KeyCode::KeyA,
-            cast_sfx: audio::SFXKind::MagicMissileCast,
-        },
-        AbilityCastInitiator {
-            ability_type: Ability::Fireball,
-            cast_time: Timer::from_seconds(0.5, TimerMode::Once),
-            recharge_time: Timer::from_seconds(1.5, TimerMode::Once),
-            keyboard_shortcut: KeyCode::KeyS,
-            cast_sfx: audio::SFXKind::MagicMissileCast,
-        },
+        AbilityCastInitiator::new(
+            Timer::from_seconds(0.5, TimerMode::Once),
+            Timer::from_seconds(1.0, TimerMode::Once),
+            audio::SFXKind::MagicMissileCast,
+            Ability::MagicMissile,
+            KeyCode::KeyA,
+        ),
+        AbilityCastInitiator::new(
+            Timer::from_seconds(0.5, TimerMode::Once),
+            Timer::from_seconds(1.5, TimerMode::Once),
+            audio::SFXKind::MagicMissileCast,
+            Ability::Fireball,
+            KeyCode::KeyS,
+        ),
+        // AbilityCastInitiator {
+        //     ability_type: Ability::MagicMissile,
+        //     cast_time: Timer::from_seconds(0.5, TimerMode::Once),
+        //     recharge_time: Timer::from_seconds(1.0, TimerMode::Once),
+        //     keyboard_shortcut: KeyCode::KeyA,
+        //     cast_sfx: audio::SFXKind::MagicMissileCast,
+        // },
+        // AbilityCastInitiator {
+        //     ability_type: Ability::Fireball,
+        //     cast_time: Timer::from_seconds(0.5, TimerMode::Once),
+        //     recharge_time: Timer::from_seconds(1.5, TimerMode::Once),
+        //     keyboard_shortcut: KeyCode::KeyS,
+        //     cast_sfx: audio::SFXKind::MagicMissileCast,
+        // },
     ]);
 
     commands.spawn((

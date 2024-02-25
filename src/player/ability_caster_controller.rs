@@ -5,7 +5,6 @@ use crate::{
     prelude::*,
 };
 use bevy::input::keyboard::KeyboardInput;
-use bevy_kira_audio::AudioSource;
 
 pub struct AbilityCasterControllerPlugin;
 
@@ -22,42 +21,20 @@ fn initiate_ability_cast(
     mut keyboard_events: EventReader<KeyboardInput>,
     mut cast_event: EventWriter<AbilityCast>,
     mut play_sfx: EventWriter<audio::EventPlaySFX>,
-    mut player_query: Query<
-        (
-            Entity,
-            &Transform,
-            &mut ActiveAbilities,
-            Option<&RechargeCooldown>,
-        ),
-        With<Player>,
-    >,
+    mut player_query: Query<(Entity, &Transform, &mut ActiveAbilities), With<Player>>,
     cursor_position: Res<CursorPosition>,
-    mut commands: Commands,
 ) {
-    let Ok((caster, transform, abilities, recharge_cooldown)) = player_query.get_single_mut() else {
+    let Ok((caster, transform, mut abilities)) = player_query.get_single_mut() else {
         return;
     };
 
     for event in keyboard_events.read() {
-        for ability_initiator in abilities.0.iter() {
+        for ability_initiator in abilities.0.iter_mut() {
             if event.key_code == ability_initiator.keyboard_shortcut {
-                println!("cast {:?}", ability_initiator.ability_type);
-                if let Some(cooldown) = recharge_cooldown {
-                    for ability_cooldown in cooldown.0.iter() {
-                        if ability_initiator.ability_type == ability_cooldown.ability {
-                            println!("on cooldown");
-                            return;
-                        }
-                    }
+                if ability_initiator.is_recharge_on_cooldown {
+                    continue;
                 }
-                commands
-                    .entity(caster)
-                    .insert(RechargeCooldown(vec![AbilityCooldown {
-                        ability: ability_initiator.ability_type,
-                        timer: ability_initiator.recharge_time.clone(),
-                    }]));
-                // ability_initiator.recharge_cooldown = Some(ability_initiator.recharge_time);
-
+                ability_initiator.is_recharge_on_cooldown = true;
                 play_sfx.send(audio::EventPlaySFX::new(ability_initiator.cast_sfx));
                 cast_event.send(AbilityCast {
                     ability: ability_initiator.ability_type,
@@ -71,16 +48,17 @@ fn initiate_ability_cast(
 }
 
 fn tick_recharge_cooldown(
-    mut commands: Commands,
-    mut cooldowns: Query<(Entity, &mut RechargeCooldown)>,
+    mut active_abilities_query: Query<&mut ActiveAbilities>,
     time: Res<Time>,
 ) {
-    for (entity, mut recharge_cooldowns) in &mut cooldowns {
-        for ability_cooldown in recharge_cooldowns.0.iter_mut() {
-            ability_cooldown.timer.tick(time.delta());
-
-            if ability_cooldown.timer.just_finished() {
-                commands.entity(entity).remove::<RechargeCooldown>();
+    for mut ability_initiators in active_abilities_query.iter_mut() {
+        for initiator in ability_initiators.0.iter_mut() {
+            if initiator.is_recharge_on_cooldown {
+                initiator.recharge_time.tick(time.delta());
+            }
+            if initiator.recharge_time.just_finished() {
+                initiator.recharge_time.reset();
+                initiator.is_recharge_on_cooldown = false;
             }
         }
     }
@@ -92,19 +70,31 @@ pub struct AbilityCastInitiator {
     pub cast_time: Timer,
     pub recharge_time: Timer,
     pub cast_sfx: audio::SFXKind,
-    // pub cast_cooldown: Option<Timer>,
-    // pub recharge_cooldown: Option<Timer>,
+    is_cast_on_cooldown: bool,
+    is_recharge_on_cooldown: bool,
     pub ability_type: Ability,
     pub keyboard_shortcut: KeyCode,
 }
 
-struct AbilityCooldown {
-    ability: Ability,
-    timer: Timer,
+impl AbilityCastInitiator {
+    pub fn new(
+        cast_time: Timer,
+        recharge_time: Timer,
+        cast_sfx: audio::SFXKind,
+        ability_type: Ability,
+        keyboard_shortcut: KeyCode,
+    ) -> Self {
+        Self {
+            cast_sfx,
+            cast_time,
+            recharge_time,
+            is_cast_on_cooldown: false,
+            is_recharge_on_cooldown: false,
+            keyboard_shortcut,
+            ability_type,
+        }
+    }
 }
-
-#[derive(Component)]
-struct RechargeCooldown(pub Vec<AbilityCooldown>);
 
 #[derive(Component)]
 pub struct ActiveAbilities(pub Vec<AbilityCastInitiator>);
