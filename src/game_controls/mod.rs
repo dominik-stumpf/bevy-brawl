@@ -1,14 +1,18 @@
+use self::assets::GameAssets;
 use crate::prelude::*;
+use bevy_asset_loader::prelude::*;
 use bevy_xpbd_3d::prelude::PhysicsLayer;
 
 pub mod assets;
-mod cleanup;
-pub mod prelude {
-    pub use super::cleanup::*;
-}
+pub mod cleanup;
+// pub mod prelude {
+//     pub use super::assets::GameAssets;
+//     pub use super::cleanup::*;
+// }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, States)]
 pub enum GameState {
+    AssetLoading,
     MainMenu,
     InGame,
 }
@@ -39,6 +43,11 @@ pub struct GameControlsPlugin;
 impl Plugin for GameControlsPlugin {
     fn build(&self, app: &mut App) {
         app.insert_state(PlayingState::Playing)
-            .insert_state(GameState::InGame);
+            .insert_state(GameState::AssetLoading)
+            .add_loading_state(
+                LoadingState::new(GameState::AssetLoading)
+                    .continue_to_state(GameState::InGame)
+                    .load_collection::<GameAssets>(),
+            );
     }
 }

@@ -8,10 +8,9 @@ pub fn cleanup_system<T: Component>(mut commands: Commands, q: Query<Entity, Wit
 
 /// Marker components to group entities for cleanup
 pub mod cleanup_at {
-    // #[derive(Component)]
-    // pub struct LevelUnload;
+    use bevy::prelude::*;
     // #[derive(Component)]
     // pub struct MenuClose;
-    // #[derive(Component)]
-    pub struct InGamePlayingExit;
+    #[derive(Component)]
+    pub struct InGameExit;
 }

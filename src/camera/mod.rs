@@ -1,9 +1,6 @@
-use self::skybox::{Cubemap, CUBEMAPS};
-use bevy::{
-    core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping, Skybox},
-    prelude::*,
-};
-use bevy_panorbit_camera::{PanOrbitCamera, PanOrbitCameraPlugin};
+use self::skybox::Cubemap;
+use crate::prelude::*;
+use bevy::core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping, Skybox};
 
 mod skybox;
 pub mod utils;
@@ -11,16 +8,10 @@ pub struct CameraPlugin;
 
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(PanOrbitCameraPlugin)
-            // .add_systems(Startup, spawn_panorbit_camera)
-            .add_systems(Startup, (spawn_camera, spawn_light))
+        app.add_systems(OnEnter(GameState::InGame), (spawn_camera, spawn_light))
             .add_systems(
                 Update,
-                (
-                    skybox::animate_light_direction,
-                    skybox::cycle_cubemap_asset,
-                    skybox::asset_loaded.after(skybox::cycle_cubemap_asset),
-                ),
+                (animate_light_direction, skybox::asset_loaded).run_if(in_state(GameState::InGame)),
             );
     }
 }
@@ -30,7 +21,7 @@ pub struct MainCamera {
     pub initial_position: Vec3,
 }
 
-fn spawn_camera(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn spawn_camera(mut commands: Commands, assets: Res<GameAssets>) {
     let initial_position = Vec3::new(0.0, 20.0, 12.0);
     let camera = Camera3dBundle {
         camera: Camera {
@@ -42,7 +33,7 @@ fn spawn_camera(mut commands: Commands, asset_server: Res<AssetServer>) {
             .looking_at(Vec3::ZERO, -Vec3::Z),
         ..default()
     };
-    let skybox_handle = asset_server.load(CUBEMAPS[0].0);
+    let skybox_handle = assets.environment_map.clone();
 
     commands.spawn((
         Name::new("MainCamera"),
@@ -53,10 +44,8 @@ fn spawn_camera(mut commands: Commands, asset_server: Res<AssetServer>) {
             brightness: 100.0,
         },
         EnvironmentMapLight {
-            diffuse_map: asset_server
-                .load("environment_maps/kloofendal_43d_clear_puresky_diff_1k.ktx2"),
-            specular_map: asset_server
-                .load("environment_maps/kloofendal_43d_clear_puresky_spec_1k.ktx2"),
+            diffuse_map: assets.diffuse_map.clone(),
+            specular_map: assets.specular_map.clone(),
             intensity: 500.0,
         },
         BloomSettings::default(),
@@ -64,7 +53,6 @@ fn spawn_camera(mut commands: Commands, asset_server: Res<AssetServer>) {
 
     commands.insert_resource(Cubemap {
         is_loaded: false,
-        index: 0,
         image_handle: skybox_handle,
     });
 }
@@ -86,31 +74,11 @@ fn spawn_light(mut commands: Commands) {
     });
 }
 
-fn spawn_panorbit_camera(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let skybox_handle = asset_server.load(CUBEMAPS[0].0);
-
-    commands.spawn((
-        Camera3dBundle {
-            transform: Transform::from_translation(Vec3::new(0.0, 1.5, 5.0)),
-            ..default()
-        },
-        PanOrbitCamera::default(),
-        Skybox {
-            image: skybox_handle.clone(),
-            brightness: 150.0,
-        },
-        EnvironmentMapLight {
-            diffuse_map: asset_server
-                .load("environment_maps/kloofendal_43d_clear_puresky_diff_1k.ktx2"),
-            specular_map: asset_server
-                .load("environment_maps/kloofendal_43d_clear_puresky_spec_1k.ktx2"),
-            intensity: 1200.0,
-        },
-    ));
-
-    commands.insert_resource(Cubemap {
-        is_loaded: false,
-        index: 0,
-        image_handle: skybox_handle,
-    });
+pub fn animate_light_direction(
+    time: Res<Time>,
+    mut query: Query<&mut Transform, With<DirectionalLight>>,
+) {
+    for mut transform in &mut query {
+        transform.rotate_y(time.delta_seconds() * 0.02);
+    }
 }
