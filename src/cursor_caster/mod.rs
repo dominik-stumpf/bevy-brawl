@@ -7,14 +7,15 @@ pub struct CursorCasterPlugin;
 impl Plugin for CursorCasterPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(CursorPosition::default())
-            .add_systems(Startup, spawn_position_marker)
+            .add_systems(OnEnter(GameState::InGame), spawn_position_marker)
             .add_systems(
                 Update,
                 (
                     draw_position_marker_gizmo,
                     update_cursor_position,
                     update_marker_position,
-                ),
+                )
+                    .run_if(in_state(GameState::InGame)),
             );
     }
 }

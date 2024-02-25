@@ -1,4 +1,5 @@
-use crate::{camera::utils::lock_camera_to_entity, prelude::*};
+use self::ability_caster_controller::{AbilityCastInitiator, ActiveAbilities};
+use crate::{ability::Ability, camera::utils::lock_camera_to_entity, prelude::*};
 use ability_caster_controller::AbilityCasterControllerPlugin;
 use bevy::transform::TransformSystem;
 use bevy_xpbd_3d::{math::*, prelude::*};
@@ -31,9 +32,17 @@ fn spawn_player(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
+    let active_abilities = ActiveAbilities(vec![AbilityCastInitiator {
+        ability_type: Ability::MagicMissile,
+        cast_time: Timer::from_seconds(0.5, TimerMode::Once),
+        recharge_time: Timer::from_seconds(2.0, TimerMode::Once),
+        keyboard_shortcut: KeyCode::KeyQ,
+    }]);
+
     commands.spawn((
         Name::new("Player"),
         Player,
+        active_abilities,
         PbrBundle {
             mesh: meshes.add(Capsule3d::new(0.4, 1.0)),
             material: materials.add(Color::rgb(0.8, 0.7, 0.6)),

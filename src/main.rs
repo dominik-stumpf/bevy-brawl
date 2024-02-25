@@ -1,4 +1,5 @@
 use ability::AbilityPlugin;
+use audio::AudioPlugin;
 use bevy::prelude::*;
 use bevy_xpbd_3d::plugins::PhysicsPlugins;
 use camera::CameraPlugin;
@@ -9,6 +10,7 @@ use prelude::GameControlsPlugin;
 use world::WorldPlugin;
 
 mod ability;
+mod audio;
 mod camera;
 mod cursor_caster;
 mod debug;
@@ -36,6 +38,7 @@ fn main() {
             CursorCasterPlugin,
             AbilityPlugin,
             GameControlsPlugin,
+            AudioPlugin,
         ))
         .insert_resource(Msaa::Sample8)
         .run();
